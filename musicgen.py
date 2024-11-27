@@ -99,7 +99,7 @@ async def generate_music(request: MusicGenerationRequest):
         raise HTTPException(status_code=500, detail=str(e))
 
 def run_server():
-    config = Config(app=app, host="127.0.0.0", port=8000, log_level="info")
+    config = Config(app=app, host="0.0.0.0", port=8000, log_level="info")
     server = Server(config=config)
     loop = asyncio.get_event_loop()
     nest_asyncio.apply()
