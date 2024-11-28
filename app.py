@@ -19,6 +19,10 @@ from starlette.responses import StreamingResponse
 import keras
 from huggingface_hub import hf_hub_download, snapshot_download
 from transformers import AutoModel, AutoTokenizer
+from typing import Optional
+from audiocraft.models import MusicGen
+from audiocraft.data.audio import audio_write
+import uuid
 
 os.environ["KERAS_BACKEND"] = "tensorflow"
 
@@ -26,7 +30,7 @@ os.environ["KERAS_BACKEND"] = "tensorflow"
  # model = AutoModel.from_pretrained("Abdelhameid/musicgenre")
    # tokenizer = AutoTokenizer.from_pretrained("Abdelhameid/musicgenre")
     #return model
-
+device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 app = FastAPI()
 
 classes=['blues', 'classical','country', 'disco', 'hiphop', 'jazz', 'metal', 'pop','reggae','rock']
@@ -113,6 +117,47 @@ async def predict(file: UploadFile = File(...)):
 
        except Exception as e:
             raise HTTPException(status_code=500, detail=f"An error occurred during prediction: {e}")
+
+model2 = MusicGen.get_pretrained('small')
+model2.set_generation_params(duration=8)
+
+class MusicGenerationRequest(BaseModel):
+    prompt: str
+    duration: Optional[int] = 8
+    model_size: Optional[str] = 'small'
+
+@app.post("/generate-music")
+async def generate_music(request: MusicGenerationRequest):
+    try:
+        model2 = MusicGen.get_pretrained(request.model_size)
+        model2.set_generation_params(duration=request.duration)
+
+        wav = model2.generate([request.prompt])
+
+        audio_data = wav[0].to(dtype=torch.float32).to(device)
+        generated_duration = audio_data.shape[0] / model.sample_rate
+
+        filename = f"generated_{uuid.uuid4()}.wav"
+        output_dir = tempfile.gettempdir()
+        output_path = os.path.join(output_dir, filename)
+
+        audio_write(
+            output_path.split('.')[0],
+            audio_data,
+            model2.sample_rate,
+        )
+
+        return FileResponse(
+            output_path,
+            media_type="audio/wav",
+            headers={
+                "Content-Disposition": f"inline; filename={filename}",
+                "X-Audio-Duration": f"{generated_duration:.2f} seconds",
+            }
+        )
+
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
        
        
        
