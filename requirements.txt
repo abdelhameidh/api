@@ -6,7 +6,6 @@ uvicorn
 magnum
 huggingface_hub
 keras
-python-multipart
 torch
 transformers
 accelerate
