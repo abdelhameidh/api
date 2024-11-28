@@ -23,6 +23,7 @@ from typing import Optional
 from audiocraft.models import MusicGen
 from audiocraft.data.audio import audio_write
 import uuid
+import torch
 
 os.environ["KERAS_BACKEND"] = "tensorflow"
 
