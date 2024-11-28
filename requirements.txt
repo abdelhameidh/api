@@ -3,7 +3,7 @@ librosa
 tensorflow
 fastapi
 uvicorn
-magnum
+mangum
 huggingface_hub
 keras
 torch
@@ -12,5 +12,3 @@ tqdm
 soundfile
 audiocraft
 pydantic
-typing
-uuid
