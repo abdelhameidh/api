@@ -7,7 +7,6 @@ magnum
 huggingface_hub
 keras
 torch
-transformers
 accelerate
 tqdm
 soundfile
